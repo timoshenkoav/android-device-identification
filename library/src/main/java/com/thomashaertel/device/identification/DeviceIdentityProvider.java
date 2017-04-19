@@ -24,19 +24,29 @@ import com.thomashaertel.device.identification.internal.DeviceIdentifier;
 import java.util.Date;
 
 public class DeviceIdentityProvider {
+    public static void setConfig(Config mConfig) {
+        DeviceIdentityProvider.mConfig = mConfig;
+    }
 
+    public static class Config{
+        final boolean mSecure;
+
+        public Config(boolean secure) {
+            this.mSecure = secure;
+        }
+    }
     public static final String DEVICE_ID_KEY = "deviceId";
     public static final String DEVICE_ID_TIMESTAMP = "deviceIdTimestamp";
 
     private static DeviceIdentityProvider instance;
     private Context mContext;
     private KeyValueStore mIdentityStore;
-
+    private static Config mConfig = new Config(true);
     private boolean mNewDevice;
 
     private DeviceIdentityProvider(Context ctx) {
         this.mContext = ctx;
-        this.mIdentityStore = new SharedPreferencesStore(ctx, true);
+        this.mIdentityStore = new SharedPreferencesStore(ctx, mConfig.mSecure);
 
         init();
     }

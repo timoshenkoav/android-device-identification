@@ -19,7 +19,6 @@ package com.thomashaertel.device.identification;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.securepreferences.SecurePreferences;
 
 
 public class SharedPreferencesStore implements KeyValueStore {
@@ -46,11 +45,6 @@ public class SharedPreferencesStore implements KeyValueStore {
 
     private static SharedPreferences init(Context ctx, String filename, boolean secure) {
         SharedPreferences prefs = ctx.getSharedPreferences(filename, Context.MODE_PRIVATE);
-
-        // if secure preferences should be used, wrap the shared preferences instance
-        if (secure) {
-            prefs = new SecurePreferences(ctx, prefs);
-        }
 
         return prefs;
     }

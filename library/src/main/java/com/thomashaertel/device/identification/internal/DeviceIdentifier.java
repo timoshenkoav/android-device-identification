@@ -398,6 +398,7 @@ public final class DeviceIdentifier {
                     // I guess getMacAddress() has no java doc !!!
                     return wm.getConnectionInfo().getMacAddress();
                 }
+                return null;
             }
         },
         BLUETOOTH_MAC {
@@ -416,6 +417,7 @@ public final class DeviceIdentifier {
                 if (hasPermission(ctx, permission.BLUETOOTH)) {
                     return ba.getAddress();
                 }
+                return null;
             }
         },
         PSEUDO_ID {

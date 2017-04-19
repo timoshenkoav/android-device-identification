@@ -17,6 +17,7 @@
 package com.thomashaertel.device.identification.internal;
 
 import android.Manifest.permission;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -287,12 +288,10 @@ public final class DeviceIdentifier {
     }
 
 
-    private static void assertPermission(Context ctx, String perm) {
+    private static boolean hasPermission(Context ctx, String perm) {
         final int checkPermission = ctx.getPackageManager().checkPermission(
                 perm, ctx.getPackageName());
-        if (checkPermission != PackageManager.PERMISSION_GRANTED) {
-            throw new SecurityException("Permission " + perm + " is required");
-        }
+        return checkPermission == PackageManager.PERMISSION_GRANTED;
     }
 
     private static enum IDs {
@@ -309,8 +308,9 @@ public final class DeviceIdentifier {
                     w("Telephony Manager not available");
                     return null;
                 }
-                assertPermission(ctx, permission.READ_PHONE_STATE);
-                return tm.getDeviceId();
+                if (hasPermission(ctx, permission.READ_PHONE_STATE))
+                    return tm.getDeviceId();
+                return null;
             }
         },
         IMSI {
@@ -326,8 +326,10 @@ public final class DeviceIdentifier {
                     w("Telephony Manager not available");
                     return null;
                 }
-                assertPermission(ctx, permission.READ_PHONE_STATE);
-                return tm.getSubscriberId();
+                if (hasPermission(ctx, permission.READ_PHONE_STATE)) {
+                    return tm.getSubscriberId();
+                }
+                return null;
             }
         },
         SIM_SERIAL_NO {
@@ -343,8 +345,10 @@ public final class DeviceIdentifier {
                     w("Telephony Manager not available");
                     return null;
                 }
-                assertPermission(ctx, permission.READ_PHONE_STATE);
-                return tm.getSimSerialNumber();
+                if (hasPermission(ctx, permission.READ_PHONE_STATE)) {
+                    return tm.getSimSerialNumber();
+                }
+                return null;
             }
         },
         SERIAL_NO {
@@ -381,6 +385,7 @@ public final class DeviceIdentifier {
              * getMacAddress() returns the unique wifi hardware address
              * Works only if wifi module is present
              */
+            @SuppressLint("HardwareIds")
             @Override
             String getId(Context ctx) {
                 WifiManager wm = (WifiManager) ctx
@@ -389,9 +394,10 @@ public final class DeviceIdentifier {
                     w("Wifi Manager not available");
                     return null;
                 }
-                assertPermission(ctx, permission.ACCESS_WIFI_STATE);
-                // I guess getMacAddress() has no java doc !!!
-                return wm.getConnectionInfo().getMacAddress();
+                if (hasPermission(ctx, permission.ACCESS_WIFI_STATE)) {
+                    // I guess getMacAddress() has no java doc !!!
+                    return wm.getConnectionInfo().getMacAddress();
+                }
             }
         },
         BLUETOOTH_MAC {
@@ -399,6 +405,7 @@ public final class DeviceIdentifier {
              * getMacAddress() returns the unique bluetooth hardware address
              * Works only if bluetooth module is present
              */
+            @SuppressLint("HardwareIds")
             @Override
             String getId(Context ctx) {
                 BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
@@ -406,8 +413,9 @@ public final class DeviceIdentifier {
                     w("Bluetooth Adapter not available");
                     return null;
                 }
-                assertPermission(ctx, permission.BLUETOOTH);
-                return ba.getAddress();
+                if (hasPermission(ctx, permission.BLUETOOTH)) {
+                    return ba.getAddress();
+                }
             }
         },
         PSEUDO_ID {

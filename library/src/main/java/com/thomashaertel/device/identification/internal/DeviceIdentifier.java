@@ -16,19 +16,12 @@
  */
 package com.thomashaertel.device.identification.internal;
 
-import android.Manifest.permission;
-import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings.Secure;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-
 import com.thomashaertel.device.identification.internal.util.HashUtil;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
@@ -115,13 +108,11 @@ public final class DeviceIdentifier {
                 result = uuid;
 
                 if (result == null) {
-                    final String deviceId = IDs.IMSI.getId(ctx);
-                    final String serialNo = IDs.SIM_SERIAL_NO.getId(ctx);
 
                     UUID deviceUuid = null;
 
                     // compute least significant bits for uuid
-                    final long lsb = ((long) deviceId.hashCode() << 32) | serialNo.hashCode();
+                    final long lsb = ((long) deviceId.hashCode() << 32);
 
                     try {
                         final String androidId = IDs.ANDROID_ID.getId(ctx);
@@ -190,50 +181,6 @@ public final class DeviceIdentifier {
 
 
     /**
-     * Returns the IMEI for GSM and the MEID or ESN for CDMA phones.
-     *
-     * @param ctx an Android constant (to retrieve system services)
-     * @return the IMEI or MEID - null is never returned, instead a DeviceIDException is thrown
-     * @throws DeviceIDException if none of the enum methods manages to return a device ID
-     */
-    public static synchronized String getImei(Context ctx) throws DeviceIDException {
-        return IDs.IMEI.getId(ctx);
-    }
-
-    /**
-     * Returns the IMSI of a phone.
-     *
-     * @param ctx an Android constant (to retrieve system services)
-     * @return the IMSI - null is never returned, instead a DeviceIDException is thrown
-     * @throws DeviceIDException if none of the enum methods manages to return a device ID
-     */
-    public static synchronized String getImsi(Context ctx) throws DeviceIDException {
-        return IDs.IMSI.getId(ctx);
-    }
-
-    /**
-     * Returns the sim card serial number of a phone.
-     *
-     * @param ctx an Android constant (to retrieve system services)
-     * @return the sim serial number - null is never returned, instead a DeviceIDException is thrown
-     * @throws DeviceIDException if none of the enum methods manages to return a device ID
-     */
-    public static synchronized String getSimSerialNo(Context ctx) throws DeviceIDException {
-        return IDs.SIM_SERIAL_NO.getId(ctx);
-    }
-
-    /**
-     * Returns the serial number of a device.
-     *
-     * @param ctx an Android constant (to retrieve system services)
-     * @return the device serial number - null is never returned, instead a DeviceIDException is thrown
-     * @throws DeviceIDException if none of the enum methods manages to return a device ID
-     */
-    public static synchronized String getSerialNo(Context ctx) throws DeviceIDException {
-        return IDs.SERIAL_NO.getId(ctx);
-    }
-
-    /**
      * Returns the unique DeviceID
      * Works for Android 2.2 and above, but buggy on some devices
      *
@@ -243,30 +190,6 @@ public final class DeviceIdentifier {
      */
     public static synchronized String getAndroidId(Context ctx) throws DeviceIDException {
         return IDs.ANDROID_ID.getId(ctx);
-    }
-
-    /**
-     * Returns the unique wifi hardware address
-     * Works only if wifi module is present
-     *
-     * @param ctx an Android constant (to retrieve system services)
-     * @return the wifi MAC address - null is never returned, instead a DeviceIDException is thrown
-     * @throws DeviceIDException if none of the enum methods manages to return a device ID*
-     */
-    public static synchronized String getWifiId(Context ctx) throws DeviceIDException {
-        return IDs.WIFI_MAC.getId(ctx);
-    }
-
-    /**
-     * Returns the unique bluetooth hardware address
-     * Works only if bluetooth module is present
-     *
-     * @param ctx an Android constant (to retrieve system services)
-     * @return the wifi MAC address - null is never returned, instead a DeviceIDException is thrown
-     * @throws DeviceIDException if none of the enum methods manages to return a device ID*
-     */
-    public static synchronized String getBluetoothId(Context ctx) throws DeviceIDException {
-        return IDs.BLUETOOTH_MAC.getId(ctx);
     }
 
     /**
@@ -295,73 +218,6 @@ public final class DeviceIdentifier {
     }
 
     private static enum IDs {
-        IMEI {
-            /**
-             * getDeviceId() function Returns the unique device ID.
-             * for example,the IMEI for GSM and the MEID or ESN for CDMA phones.
-             */
-            @Override
-            String getId(Context ctx) {
-                final TelephonyManager tm = (TelephonyManager) ctx
-                        .getSystemService(Context.TELEPHONY_SERVICE);
-                if (tm == null) {
-                    w("Telephony Manager not available");
-                    return null;
-                }
-                if (hasPermission(ctx, permission.READ_PHONE_STATE))
-                    return tm.getDeviceId();
-                return null;
-            }
-        },
-        IMSI {
-            /**
-             * getSubscriberId() function Returns the unique subscriber ID,
-             * for example, the IMSI for a GSM phone.
-             */
-            @Override
-            String getId(Context ctx) {
-                final TelephonyManager tm = (TelephonyManager) ctx
-                        .getSystemService(Context.TELEPHONY_SERVICE);
-                if (tm == null) {
-                    w("Telephony Manager not available");
-                    return null;
-                }
-                if (hasPermission(ctx, permission.READ_PHONE_STATE)) {
-                    return tm.getSubscriberId();
-                }
-                return null;
-            }
-        },
-        SIM_SERIAL_NO {
-            /**
-             * getSimSerialNumber() function Returns the unique sim card ID,
-             * for example, the SIM Card ID for a GSM phone.
-             */
-            @Override
-            String getId(Context ctx) {
-                final TelephonyManager tm = (TelephonyManager) ctx
-                        .getSystemService(Context.TELEPHONY_SERVICE);
-                if (tm == null) {
-                    w("Telephony Manager not available");
-                    return null;
-                }
-                if (hasPermission(ctx, permission.READ_PHONE_STATE)) {
-                    return tm.getSimSerialNumber();
-                }
-                return null;
-            }
-        },
-        SERIAL_NO {
-            /**
-             * System Property ro.serialno returns the serial number as unique number
-             * Works for Android 2.3 and above
-             */
-            @Override
-            String getId(Context ctx) {
-                // no permission needed !
-                return SystemPropertiesProxy.get(ctx, PROPERTY_SERIAL_NO, UNKNOWN);
-            }
-        },
         ANDROID_ID {
             /**
              * Settings.Secure.ANDROID_ID returns the unique DeviceID
@@ -380,46 +236,7 @@ public final class DeviceIdentifier {
                 return androidId;
             }
         },
-        WIFI_MAC {
-            /**
-             * getMacAddress() returns the unique wifi hardware address
-             * Works only if wifi module is present
-             */
-            @SuppressLint("HardwareIds")
-            @Override
-            String getId(Context ctx) {
-                WifiManager wm = (WifiManager) ctx
-                        .getSystemService(Context.WIFI_SERVICE);
-                if (wm == null) {
-                    w("Wifi Manager not available");
-                    return null;
-                }
-                if (hasPermission(ctx, permission.ACCESS_WIFI_STATE)) {
-                    // I guess getMacAddress() has no java doc !!!
-                    return wm.getConnectionInfo().getMacAddress();
-                }
-                return null;
-            }
-        },
-        BLUETOOTH_MAC {
-            /**
-             * getMacAddress() returns the unique bluetooth hardware address
-             * Works only if bluetooth module is present
-             */
-            @SuppressLint("HardwareIds")
-            @Override
-            String getId(Context ctx) {
-                BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
-                if (ba == null) {
-                    w("Bluetooth Adapter not available");
-                    return null;
-                }
-                if (hasPermission(ctx, permission.BLUETOOTH)) {
-                    return ba.getAddress();
-                }
-                return null;
-            }
-        },
+
         PSEUDO_ID {
             /**
              * returns a generated pseudo unique ID

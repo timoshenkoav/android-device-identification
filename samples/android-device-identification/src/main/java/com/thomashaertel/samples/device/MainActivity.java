@@ -16,27 +16,19 @@
  */
 package com.thomashaertel.samples.device;
 
+import android.app.Activity;
 import android.app.backup.BackupManager;
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBarActivity;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.thomashaertel.device.identification.DeviceIdentityProvider;
-
 import java.text.SimpleDateFormat;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     private static SimpleDateFormat formatter = new SimpleDateFormat();
-    
+
     private DeviceIdentityProvider identityProvider;
 
     @Override
@@ -51,7 +43,7 @@ public class MainActivity extends ActionBarActivity {
             BackupManager backupManager = new BackupManager(this);
             backupManager.dataChanged();
         }
-        
+
         initView();
     }
 

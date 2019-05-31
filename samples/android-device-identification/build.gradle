@@ -1,14 +1,12 @@
 apply plugin: 'com.android.application'
-apply from: '../../gradle.properties'
 
 android {
-    compileSdkVersion global_compileSdkVersion
-    buildToolsVersion global_buildToolsVersion
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.thomashaertel.samples.device"
-        minSdkVersion global_minSdkVersion
-        targetSdkVersion global_targetSdkVersion
+        minSdkVersion 15
+        targetSdkVersion 28
         versionCode 1
         versionName "0.1.0"
     }
@@ -18,11 +16,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion '25.0.0'
 }
 
 dependencies {
     compile project(':android-device-identification')
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:21.0.3'
 }
